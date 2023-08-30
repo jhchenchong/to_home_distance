@@ -1,0 +1,11 @@
+{
+  "codeowners": ["@jhchenchong"],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/jhchenchong/to_home_distance",
+  "domain": "to_home_distance",
+  "iot_class": "calculated",
+  "name": "To Home Distance",
+  "requirements": [],
+  "version": "1.0.0"
+}
