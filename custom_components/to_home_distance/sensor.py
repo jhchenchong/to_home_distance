@@ -109,10 +109,22 @@ class ToHomeDistanceSensor(Entity):
         """
         return {
             "key": self._api_key,
-            "origins": ','.join(map(str, self._home_location)),
-            "destination": self._get_device_tracker_location(),
+            "origins": self._origin(),
+            "destination": self._destination(),
             "type": 1,
         }
+
+    def _origin(self):
+        """
+        Get the origin.
+        """
+        return ','.join(map(str, self._get_device_tracker_location()))
+
+    def _destination(self):
+        """
+        Get the origin.
+        """
+        return ','.join(map(str, self._home_location))
 
     def _get_device_tracker_location(self):
         """
@@ -123,7 +135,7 @@ class ToHomeDistanceSensor(Entity):
             attributes = device_tracker_state.attributes
             longitude, latitude = attributes.get("longitude"), attributes.get("latitude")
             if longitude is not None and latitude is not None:
-                return f"{longitude},{latitude}"
+                return latitude, longitude
         return None
 
     def _parse_data(self, data):
