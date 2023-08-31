@@ -1,0 +1,16 @@
+{
+	"config": {
+		"step": {
+			"user": {
+				"data": {
+					"api_key": "高德地图api_key",
+					"home_longitude": "家的经度",
+					"home_latitude": "家的纬度",
+					"device_tracker_entity_id": "手机实体ID"
+				},
+				"description": "输入配置信息",
+				"title": "配置信息"
+			}
+		}
+	}
+}
