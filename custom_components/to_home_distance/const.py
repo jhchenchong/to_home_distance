@@ -4,6 +4,7 @@ Constants for the To Home Distance integration.
 DOMAIN = "to_home_distance"
 
 CONF_API_URL = "https://restapi.amap.com/v3/direction"
+CONF_VALIDATE_API_KEY_URL = "https://restapi.amap.com/v3/ip?key="
 
 CONF_API_KEY = "api_key"
 CONF_HOME_LONGITUDE = "home_longitude"
@@ -24,7 +25,7 @@ CONF_TRANSPORTATION_MODES = {
     3: {CONF_MODE_ROUTE_KEY: "driving", CONF_MODE_DESC_KEY: "驾车"},
     4: {CONF_MODE_ROUTE_KEY: "bicycling", CONF_MODE_DESC_KEY: "骑行"}
 }
-
+CONF_DEVICE_TRACKER = "device_tracker"
 
 CONF_DISTANCE_KEY = "distance"
 CONF_DURATION_KEY = "duration"
@@ -32,3 +33,5 @@ CONF_STATUS_KEY = "status"
 CONF_ROUTE_KEY = "route"
 CONF_PATHS_KEY = "paths"
 CONF_STATUS_SUCCESS = "1"
+CONF_INFOCODE_KEY = "infocode"
+CONF_API_KEY_NOT_VALIDATED = "10001"

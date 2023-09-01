@@ -1,5 +1,5 @@
 """AMap API"""
-import requests
+import httpx
 from .const import (
     CONF_API_URL,
     CONF_REQUEST_TIMEOUT,
@@ -19,32 +19,23 @@ class AMapAPI:
     AMap API
     """
 
-    def __init__(self, api_key, origin, destination, mode_of_transportation):
+    def __init__(self, api_key, origin, destination, mode_of_transportation) -> None:
         self._api_key = api_key
         self._origin = origin
         self._destination = destination
         self._mode_of_transportation = mode_of_transportation
 
-    def perform_request(self):
+    async def perform_request(self):
         """
-        Perform the request.
+        Perform the request asynchronously.
         """
-        response = requests.get(
-            self._get_request_url(),
-            params=self._get_request_params(),
-            timeout=CONF_REQUEST_TIMEOUT
-        )
-        return response.json()
-
-    def _get_response(self):
-        """
-        Get the HTTP response from the API.
-        """
-        return requests.get(
-            self._get_request_url(),
-            params=self._get_request_params(),
-            timeout=CONF_REQUEST_TIMEOUT
-        )
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                self._get_request_url(),
+                params=self._get_request_params(),
+                timeout=CONF_REQUEST_TIMEOUT
+            )
+            return response.json()
 
     def parse_data(self, data):
         """
