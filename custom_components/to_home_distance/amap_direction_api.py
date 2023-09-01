@@ -1,4 +1,6 @@
-"""AMap API"""
+"""
+高德地图路径规划API
+"""
 import httpx
 from .const import (
     CONF_API_URL,
@@ -14,9 +16,9 @@ from .const import (
 )
 
 
-class AMapAPI:
+class AMapDirectionAPI:
     """
-    AMap API
+    高德地图路径规划API
     """
 
     def __init__(self, api_key, origin, destination, mode_of_transportation) -> None:
