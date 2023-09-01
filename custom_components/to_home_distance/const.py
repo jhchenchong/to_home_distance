@@ -2,13 +2,12 @@
 Constants for the To Home Distance integration.
 """
 DOMAIN = "to_home_distance"
+ZONE_HOME = "zone.home"
 
 CONF_API_URL = "https://restapi.amap.com/v3/direction"
 CONF_VALIDATE_API_KEY_URL = "https://restapi.amap.com/v3/ip?key="
 
 CONF_API_KEY = "api_key"
-CONF_HOME_LONGITUDE = "home_longitude"
-CONF_HOME_LATITUDE = "home_latitude"
 CONF_DEVICE_TRACKER_ENTITY_ID = "device_tracker_entity_id"
 CONF_UPDATE_INTERVAL = "update_interval"
 CONF_MODE_OF_TRANSPORTATION = "mode_of_transportation"

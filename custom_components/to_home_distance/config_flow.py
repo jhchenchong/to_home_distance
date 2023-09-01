@@ -8,8 +8,6 @@ from homeassistant.helpers import config_validation as cv
 import voluptuous as vol
 from .validation import (
     validate_api_key,
-    validate_longitude,
-    validate_latitude,
     validate_domain,
     validate_mode,
     validate_update_interval
@@ -17,8 +15,6 @@ from .validation import (
 from .const import (
     DOMAIN,
     CONF_API_KEY,
-    CONF_HOME_LONGITUDE,
-    CONF_HOME_LATITUDE,
     CONF_DEVICE_TRACKER_ENTITY_ID,
     CONF_MODE_OF_TRANSPORTATION,
     CONF_UPDATE_INTERVAL,
@@ -30,8 +26,6 @@ from .const import (
 CONFIG_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_API_KEY): cv.string,
-        vol.Required(CONF_HOME_LONGITUDE): cv.string,
-        vol.Required(CONF_HOME_LATITUDE): cv.string,
         vol.Required(CONF_DEVICE_TRACKER_ENTITY_ID): cv.string,
         vol.Optional(
             CONF_MODE_OF_TRANSPORTATION,
@@ -50,12 +44,6 @@ async def validate_input(user_input):
     Validate the user input allows us to connect.
     """
     errors: dict[str, str] = {}
-    home_longitude = user_input[CONF_HOME_LONGITUDE]
-    if not validate_longitude(home_longitude):
-        errors["base"] = CONF_HOME_LONGITUDE
-    home_latitude = user_input[CONF_HOME_LATITUDE]
-    if not validate_latitude(home_latitude):
-        errors["base"] = CONF_HOME_LATITUDE
     device_tracker_entity_id = user_input[CONF_DEVICE_TRACKER_ENTITY_ID]
     if not validate_domain(device_tracker_entity_id):
         errors["base"] = CONF_DEVICE_TRACKER_ENTITY_ID
@@ -84,7 +72,7 @@ class ToHomeDistanceConfigFlow(ConfigFlow, domain=DOMAIN):
         """
         Handle the initial step.
         """
-
+        errors: dict[str, str] = {}
         if user_input is not None:
             errors = await validate_input(user_input)
             if not errors:

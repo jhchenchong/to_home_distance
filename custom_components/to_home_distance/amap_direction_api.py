@@ -39,9 +39,9 @@ class AMapDirectionAPI:
             )
             return response.json()
 
-    def parse_data(self, data):
+    def extract_distance_and_duration(self, data):
         """
-        Parse the data.
+        Extract distance and duration from data.
         """
         if data is None or data[CONF_STATUS_KEY] != CONF_STATUS_SUCCESS:
             return None
@@ -67,6 +67,6 @@ class AMapDirectionAPI:
         """
         return {
             "key": self._api_key,
-            "origins": self._origin,
+            "origin": self._origin,
             "destination": self._destination
         }
