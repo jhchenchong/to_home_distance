@@ -1,4 +1,6 @@
-"""Config flow for To Home Distance."""
+"""
+Config flow for To Home Distance.
+"""
 from typing import Optional, Any
 from collections.abc import Mapping
 from homeassistant.config_entries import ConfigFlow
@@ -72,12 +74,16 @@ async def validate_input(user_input):
 
 
 class ToHomeDistanceConfigFlow(ConfigFlow, domain=DOMAIN):
-    """Handle a config flow for To Home Distance."""
+    """
+    Handle a config flow for To Home Distance.
+    """
 
     data = Optional[Mapping[str, Any]]
 
     async def async_step_user(self, user_input: Optional[Mapping[str, Any]] = None):
-        """Handle the initial step."""
+        """
+        Handle the initial step.
+        """
 
         if user_input is not None:
             errors = await validate_input(user_input)
