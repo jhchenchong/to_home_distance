@@ -5,6 +5,7 @@ from typing import Optional, Any
 from collections.abc import Mapping
 from homeassistant.config_entries import ConfigFlow
 from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 import voluptuous as vol
 from .validation import (
     validate_api_key,
@@ -39,7 +40,7 @@ CONFIG_SCHEMA = vol.Schema(
 )
 
 
-async def validate_input(user_input):
+async def validate_input(session, user_input):
     """
     Validate the user input allows us to connect.
     """
@@ -55,7 +56,7 @@ async def validate_input(user_input):
         errors["base"] = CONF_UPDATE_INTERVAL
     api_key = user_input[CONF_API_KEY]
     try:
-        await validate_api_key(api_key)
+        await validate_api_key(session, api_key)
     except ValueError:
         errors["base"] = CONF_API_KEY
     return errors
@@ -74,7 +75,7 @@ class ToHomeDistanceConfigFlow(ConfigFlow, domain=DOMAIN):
         """
         errors: dict[str, str] = {}
         if user_input is not None:
-            errors = await validate_input(user_input)
+            errors = await validate_input(async_get_clientsession(self.hass), user_input)
             if not errors:
                 self.data = user_input
                 return self.async_create_entry(
