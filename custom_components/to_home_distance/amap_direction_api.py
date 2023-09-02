@@ -1,10 +1,8 @@
 """
 高德地图路径规划API
 """
-import httpx
 from .const import (
     CONF_API_URL,
-    CONF_REQUEST_TIMEOUT,
     CONF_TRANSPORTATION_MODES,
     CONF_MODE_ROUTE_KEY,
     CONF_DISTANCE_KEY,
@@ -21,7 +19,8 @@ class AMapDirectionAPI:
     高德地图路径规划API
     """
 
-    def __init__(self, api_key, origin, destination, mode_of_transportation) -> None:
+    def __init__(self, session, api_key, origin, destination, mode_of_transportation) -> None:
+        self._session = session
         self._api_key = api_key
         self._origin = origin
         self._destination = destination
@@ -31,13 +30,11 @@ class AMapDirectionAPI:
         """
         Perform the request asynchronously.
         """
-        async with httpx.AsyncClient() as client:
-            response = await client.get(
-                self._get_request_url(),
-                params=self._get_request_params(),
-                timeout=CONF_REQUEST_TIMEOUT
-            )
-            return response.json()
+        url = self._get_request_url()
+        params = self._get_request_params()
+        async with self._session.get(url, params=params) as resp:
+            json_data = await resp.json()
+            return json_data
 
     def extract_distance_and_duration(self, data):
         """

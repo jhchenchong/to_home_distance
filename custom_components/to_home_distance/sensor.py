@@ -1,10 +1,12 @@
 """
 This component provides support for AMaps To Home Distance sensor.
 """
-from collections.abc import Callable
+from typing import Any
 from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.entity import Entity
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from .amap_direction_api import AMapDirectionAPI
 from .const import (
     ZONE_HOME,
@@ -12,7 +14,9 @@ from .const import (
     CONF_DEVICE_TRACKER_ENTITY_ID,
     CONF_MODE_OF_TRANSPORTATION,
     CONF_LONGITUDE_KEY,
-    CONF_LATITUDE_KEY
+    CONF_LATITUDE_KEY,
+    CONF_DISTANCE_KEY,
+    CONF_DURATION_KEY
 )
 from .validation import (
     validate_longitude,
@@ -23,7 +27,7 @@ from .validation import (
 async def async_setup_entry(
         _: HomeAssistant,
         config_entry: ConfigEntry,
-        async_add_entities: Callable
+        async_add_entities: AddEntitiesCallback
 ) -> None:
     """
     Setup sensors from a config entry created in the integrations UI.
@@ -41,6 +45,30 @@ class ToHomeDistanceSensor(Entity):
     def __init__(self, config) -> None:
         self._config = config
         self._state = None
+        self._attr_unique_id = "hello_demo"
+        self._name = "ccdemo " + "hello_demo"
+        self._state = None
+        self._attrs = {}
+        self._icon = "mdi:poll"
+
+    @property
+    def name(self):
+        """Return the name of the sensor."""
+        return self._name
+
+    @property
+    def state(self):
+        """Return the state of the sensor."""
+        return self._state
+
+    @property
+    def icon(self):
+        """Icon to use in the frontend."""
+        return self._icon
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        return self._attrs
 
     async def async_update(self) -> None:
         """
@@ -57,8 +85,11 @@ class ToHomeDistanceSensor(Entity):
             mode_of_transportation
         )
         if data is not None:
-            # TODO: 设置状态和属性
-            pass
+            self._state = self.convert_distance(data[CONF_DISTANCE_KEY])
+            self._attrs = {
+                CONF_DISTANCE_KEY: self._state,
+                CONF_DURATION_KEY: self.convert_duration(data[CONF_DURATION_KEY]),
+            }
 
     async def _fetch_distance_and_duration(
             self,
@@ -70,7 +101,8 @@ class ToHomeDistanceSensor(Entity):
         """
         Fetch distance and duration from API.
         """
-        api = AMapDirectionAPI(api_key, origin, destination, mode_of_transportation)
+        session = async_get_clientsession(self.hass)
+        api = AMapDirectionAPI(session, api_key, origin, destination, mode_of_transportation)
         response = await api.perform_request()
 
         return api.extract_distance_and_duration(response)
@@ -136,7 +168,7 @@ class ToHomeDistanceSensor(Entity):
         """
         Convert and round.
         """
-        return round(float(value), 6)
+        return str(round(float(value), 6))
 
     @staticmethod
     def is_valid_location(longitude, latitude):

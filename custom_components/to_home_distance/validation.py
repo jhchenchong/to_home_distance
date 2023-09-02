@@ -2,7 +2,6 @@
 Validation functions for to_home_distance.
 """
 import re
-import httpx
 from .const import (
     CONF_DEVICE_TRACKER,
     CONF_VALIDATE_API_KEY_URL,
@@ -11,20 +10,18 @@ from .const import (
 )
 
 
-async def validate_api_key(api_key):
+async def validate_api_key(session, api_key):
     """
     Validate the API key.
     """
-    api_url = f"{CONF_VALIDATE_API_KEY_URL}{api_key}"
-    async with httpx.AsyncClient() as client:
-        try:
-            response = await client.get(api_url)
-            if response.status_code == 200:
-                json_data = response.json()
-                if json_data[CONF_INFOCODE_KEY] == CONF_API_KEY_NOT_VALIDATED:
-                    raise ValueError
-        except httpx.HTTPError as exc:
-            raise ValueError from exc
+    try:
+        api_url = f"{CONF_VALIDATE_API_KEY_URL}{api_key}"
+        async with session.get(api_url) as resp:
+            json_data = await resp.json()
+            if json_data[CONF_INFOCODE_KEY] == CONF_API_KEY_NOT_VALIDATED:
+                raise ValueError
+    except Exception as exc:
+        raise ValueError from exc
 
 
 def validate_longitude(longitude_string):
