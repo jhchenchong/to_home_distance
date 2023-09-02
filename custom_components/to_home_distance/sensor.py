@@ -7,6 +7,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.event import async_track_state_change
 from .amap_direction_api import AMapDirectionAPI
 from .const import (
     ZONE_HOME,
@@ -18,9 +19,10 @@ from .const import (
     CONF_DISTANCE_KEY,
     CONF_DURATION_KEY
 )
-from .validation import (
-    validate_longitude,
-    validate_latitude
+from .utils import (
+    format_distance,
+    format_duration,
+    format_and_validate_coordinates
 )
 
 
@@ -48,7 +50,6 @@ class ToHomeDistanceSensor(Entity):
         self._name = "To Home Distance " + config[CONF_DEVICE_TRACKER_ENTITY_ID]
         self._state = None
         self._attrs = {}
-        self._icon = "mdi:poll"
 
     @property
     def name(self):
@@ -61,13 +62,26 @@ class ToHomeDistanceSensor(Entity):
         return self._state
 
     @property
-    def icon(self):
-        """Icon to use in the frontend."""
-        return self._icon
-
-    @property
     def extra_state_attributes(self) -> dict[str, Any]:
         return self._attrs
+
+    async def async_added_to_hass(self):
+        # 在这里订阅实体状态变化事件
+        async_track_state_change(
+            self.hass,
+            self._config[CONF_DEVICE_TRACKER_ENTITY_ID],
+            self._device_tracker_state_changed
+        )
+
+    async def _device_tracker_state_changed(self, entity_id, old_state, new_state):
+        """
+        Callback when device tracker state changed.
+        """
+        device_state = new_state.state
+        if device_state == "home":
+            self._state = "在家"
+        else:
+            await self.async_update()
 
     async def async_update(self) -> None:
         """
@@ -84,10 +98,10 @@ class ToHomeDistanceSensor(Entity):
             mode_of_transportation
         )
         if data is not None:
-            self._state = self.convert_distance(data[CONF_DISTANCE_KEY])
+            self._state = format_distance(data[CONF_DISTANCE_KEY])
             self._attrs = {
                 CONF_DISTANCE_KEY: self._state,
-                CONF_DURATION_KEY: self.convert_duration(data[CONF_DURATION_KEY]),
+                CONF_DURATION_KEY: format_duration(data[CONF_DURATION_KEY]),
             }
 
     async def _fetch_distance_and_duration(
@@ -121,71 +135,24 @@ class ToHomeDistanceSensor(Entity):
 
     def _get_origin(self):
         """
-        Get origin.
+        Get origin coordinates.
         """
         entity_id = self._config[CONF_DEVICE_TRACKER_ENTITY_ID]
-        return self._from_entity_state_get_location(entity_id)
+        return self._get_coordinates_from_entity(entity_id)
 
     def _get_destination(self):
         """
-        Get destination.
+        Get destination coordinates for home.
         """
-        return self._from_entity_state_get_location(ZONE_HOME)
+        return self._get_coordinates_from_entity(ZONE_HOME)
 
-    def _from_entity_state_get_location(self, entity_id):
+    def _get_coordinates_from_entity(self, entity_id):
         """
-        Get location from entity state.
+        Get coordinates from entity state.
         """
         state = self.hass.states.get(entity_id)
         if state is None:
             return None
         longitude = state.attributes.get(CONF_LONGITUDE_KEY)
         latitude = state.attributes.get(CONF_LATITUDE_KEY)
-        return self.location(longitude, latitude)
-
-    @staticmethod
-    def location(longitude, latitude):
-        """
-        Location.
-        """
-        lng = ToHomeDistanceSensor.convert_and_round(longitude)
-        lat = ToHomeDistanceSensor.convert_and_round(latitude)
-        if not ToHomeDistanceSensor.is_valid_location(lng, lat):
-            return None
-
-        return ToHomeDistanceSensor.combine_longitude_latitude(lng, lat)
-
-    @staticmethod
-    def combine_longitude_latitude(longitude, latitude):
-        """
-        Combine longitude and latitude.
-        """
-        return f"{longitude},{latitude}"
-
-    @staticmethod
-    def convert_and_round(value):
-        """
-        Convert and round.
-        """
-        return str(round(float(value), 6))
-
-    @staticmethod
-    def is_valid_location(longitude, latitude):
-        """
-        Check if the location is valid.
-        """
-        return validate_longitude(longitude) and validate_latitude(latitude)
-
-    @staticmethod
-    def convert_distance(distance):
-        """
-        Convert distance.
-        """
-        return round(float(distance) / 1000, 2)
-
-    @staticmethod
-    def convert_duration(duration):
-        """
-        Convert duration.
-        """
-        return round(float(duration) / 60, 1)
+        return format_and_validate_coordinates(longitude, latitude)
