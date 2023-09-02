@@ -44,9 +44,8 @@ class ToHomeDistanceSensor(Entity):
 
     def __init__(self, config) -> None:
         self._config = config
-        self._state = None
-        self._attr_unique_id = "hello_demo"
-        self._name = "ccdemo " + "hello_demo"
+        self._attr_unique_id = config[CONF_DEVICE_TRACKER_ENTITY_ID]
+        self._name = "To Home Distance " + config[CONF_DEVICE_TRACKER_ENTITY_ID]
         self._state = None
         self._attrs = {}
         self._icon = "mdi:poll"
